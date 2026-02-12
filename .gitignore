@@ -1,0 +1,18 @@
+# entorno virtual
+.venv
+
+# variables de entorno
+.env
+
+# cache python
+__pycache__/
+*.pyc
+
+# dataset local
+data/
+
+# archivos del sistema
+.DS_Store
+Thumbs.db
+
+.idea/
