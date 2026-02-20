@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, END
 
 from src.graph_state import TicketState
-from src.graph_nodes import classify_node, summarize_node, generate_reply_node
+from src.graph_nodes import classify_node, summarize_node, generate_reply_node, store_results_node
 
 
 def build_graph():
@@ -15,6 +15,7 @@ def build_graph():
     graph.add_node("classify", classify_node)
     graph.add_node("summarize", summarize_node)
     graph.add_node("generate_reply", generate_reply_node)
+    graph.add_node("store_results", store_results_node)
 
     # definir punto de entrada
     graph.set_entry_point("classify")
@@ -22,7 +23,8 @@ def build_graph():
     # definir flujo (edges)
     graph.add_edge("classify", "summarize")
     graph.add_edge("summarize", "generate_reply")
-    graph.add_edge("generate_reply", END)
+    graph.add_edge("generate_reply", "store_results")
+    graph.add_edge("store_results", END)
 
     # compilar (convierte la definición en algo ejecutable)
     return graph.compile()

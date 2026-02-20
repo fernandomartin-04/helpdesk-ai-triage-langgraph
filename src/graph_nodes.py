@@ -1,4 +1,6 @@
 from src.llm import call_llm
+from src.db import insert_llm_result
+
 
 TICKET_TYPES = [
     "Technical issue",
@@ -13,7 +15,7 @@ TICKET_PRIORITIES = ["Critical", "High", "Medium", "Low"]
 
 def classify_node(state: dict) -> dict:
     """
-    Input:  state["ticket_text"]
+    Input:  {state["ticket_text"]}
     Output: {"ticket_type": ..., "ticket_priority": ...}
     """
     prompt = f"""
@@ -74,7 +76,7 @@ JSON:
 
 def generate_reply_node(state: dict) -> dict:
     """
-    Input:  state["ticket_text"], state["ticket_type"], state["ticket_priority"], state["summary"]
+    Input:  state["ticket_text"]
     Output: {"suggested_response": ...}
     """
     prompt = f"""
@@ -102,3 +104,8 @@ JSON:
     result = call_llm(prompt)
 
     return {"suggested_response": result["suggested_response"]}
+
+
+def store_results_node(state: dict) -> dict:
+    insert_llm_result(state)
+    return {}
