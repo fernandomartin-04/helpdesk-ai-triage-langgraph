@@ -64,13 +64,7 @@ def init_db() -> None:
         conn.execute("""                     
     CREATE UNIQUE INDEX IF NOT EXISTS uq_tickets_llm_all_cols
 ON tickets_llm (
-  ticket_id,
-  COALESCE(llm_ticket_type, ''),
-  COALESCE(llm_ticket_priority, ''),
-  COALESCE(llm_summary, ''),
-  COALESCE(llm_suggested_response, ''),
-  COALESCE(model, '')
-);
+  ticket_id, model);
         """)
         conn.commit()
 
@@ -161,5 +155,38 @@ def insert_llm_result(state: Dict[str, Any]) -> None:
             state.get("model"),
         ))
         conn.commit()
+
+
+def fetch_pending_tickets(model: str, limit: int = 100):
+    """
+    Devuelve tickets_raw que no tienen resultado en tickets_llm
+    para el modelo especificado.
+    """
+    sql = """
+    SELECT r.ticket_id,
+           r.ticket_subject,
+           r.ticket_description
+    FROM tickets_raw r
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM tickets_llm l
+        WHERE l.ticket_id = r.ticket_id
+          AND l.model = ?
+    )
+    LIMIT ?;
+    """
+
+    with get_connection() as conn:
+        rows = conn.execute(sql, (model, limit)).fetchall()
+
+    return rows
+
+def count_llm_rows(model: str) -> int:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT COUNT(*) FROM tickets_llm WHERE model = ?;",
+            (model,),
+        ).fetchone()
+    return int(row[0])
 
 
